@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(lubridate)
+library(plotly)
 ```
 
 # Read in data
@@ -135,7 +136,8 @@ data.combined
 # Replace NAs with 0s in indicator columns.
 data.combined <- data.combined %>% 
   mutate(across(starts_with("note_"), ~
-                  replace(., is.na(.), 0)))
+                  replace(., is.na(.), 0))) %>% 
+  mutate(notes = replace(notes, is.na(notes), "Standard"))
 
 data.combined
 ```
@@ -235,7 +237,29 @@ data.long <- data.combined %>%
          value = "time", clock.in, clock.out) %>% 
   mutate(event.type = ifelse(event.type == "clock.in", 
                              "Clock In", "Clock Out"),
-         notes = str_split(notes, ", ")) %>% 
+         notes = str_split(notes, ",_")) %>% 
   unnest(notes)
 ```
 
+```{r}
+# Plot more detailed plot
+clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes, fill = notes, shape = event.type)) +
+  geom_jitter(size = 4, width = 0.1, height = 0.1, alpha = 0.7) +
+  scale_color_manual(values = c("Post_Work_Commitment" = "darkgreen",
+                   "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
+                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange")) + 
+  scale_fill_manual(values = c("Post_Work_Commitment" = "darkgreen",
+                   "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
+                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange")) +
+  scale_shape_manual(values = c("Clock In" = 24, "Clock Out" = 25)) +
+  labs(title = "Clock in and Clock Out Times for 2024",
+       x = "Date",
+       y = "Time",
+       color = "Event",
+       fill = "Event",
+       shape = "Event Type") +
+  theme_minimal() +
+  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
+ggplotly(clock.in.out.detail)
+# clock.in.out.detail
+```
