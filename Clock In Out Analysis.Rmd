@@ -205,7 +205,7 @@ mean.office.time
 ```
 
 # Plot some graphs
-```{r line graph}
+```{r line graph, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Line graph of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
@@ -220,7 +220,7 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
-```{r scatter plot}
+```{r scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Scatter plot of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
@@ -235,7 +235,7 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
-```{r detailed scatter plot}
+```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
   geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7) +
@@ -266,7 +266,7 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event,
 clock.in.out.detail
 ```
 
-```{r scatter mean times}
+```{r scatter mean times, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Add mean times to plot
 clock.in.out.detail + 
   geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
