@@ -15,10 +15,18 @@ data <- data %>% rename(
   notes = Notes
 )
 
+# Add id column
+data <- data %>% 
+  mutate(id = rownames(data))
+
 # Cast date, clock.in and clock,out using lubridate and dplyr
-data <- data %>% mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
-                        clock.in = parse_date_time(clock.in, orders = "%H:%M"),
-                        clock.out = parse_date_time(clock.out, orders = "%H:%M"))
+data <- data %>% 
+  mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
+         clock.in = parse_date_time(clock.in, orders = "%H:%M"),
+         clock.out = parse_date_time(clock.out, orders = "%H:%M"))
+
+# Separate options from notes into separate columns
+separated.notes <- data %>% separate_rows(notes, sep = ", ")
 
 # View structure of data
 str(data)
