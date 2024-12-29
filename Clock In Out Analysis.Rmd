@@ -190,15 +190,20 @@ time.summary <- function(time.field) {
 
 ```{r}
 # Clock in summary
-datatable(time.summary(data$clock.in))
+clock.in.summary <- time.summary(data$clock.in)
+datatable(clock.in.summary)
 ```
 
 ```{r}
-datatable(time.summary(data$clock.out))
+clock.out.summary <- time.summary(data$clock.out)
+datatable(clock.out.summary)
 ```
 
 ```{r}
 # Mean time spent at office
+mean.clock.in <- parse_date_time(clock.in.summary$time[5], orders = "%H:%M")
+mean.clock.out <- parse_date_time(clock.out.summary$time[5], orders = "%H:%M")
+
 mean.office.time <- mean.clock.out - mean.clock.in
 mean.office.time
 ```
