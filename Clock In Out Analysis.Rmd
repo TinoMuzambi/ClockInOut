@@ -17,21 +17,19 @@ library(plotly)
 ```{r}
 # Read data
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
-```
 
-```{r}
 # View data
-data
+head(data)
 ```
 
 # Prepare data for analysis
 ```{r}
-# Rename columns using dplyr
+# Rename columns
 data <- data %>% rename(
   date = Date,
   clock.in = "Clock In Time",
   clock.out = "Clock Out Time",
-  notes = Notes
+  event = Notes
 )
 
 data
@@ -46,61 +44,53 @@ data
 ```
 
 ```{r}
-# Cast date, clock.in and clock.out using lubridate and dplyr
+# Cast date, clock.in and clock.out using lubridate
 data <- data %>% 
-  mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
+  mutate(date = parse_date_time(date, orders = "dmy"),
          clock.in = parse_date_time(clock.in, orders = "%H:%M"),
          clock.out = parse_date_time(clock.out, orders = "%H:%M"),
-         notes = gsub(" ", "_", notes),
-         notes = gsub(":", "_", notes),
-         notes = gsub("-", "_", notes))
+         # Convert events to programmatically friendly strings
+         event = gsub(" ", "_", event),
+         event = gsub(":", "_", event),
+         event = gsub("-", "_", event))
 
 data
 ```
 
+# Tidy data
 ```{r}
-# Separate options from notes into separate columns
-data.tidy <- data %>% separate_rows(notes, sep = ",_")
+# Separate options from event into separate columns
+data.tidy <- data %>% separate_rows(event, sep = ",_")
 
-data.tidy
+data.tidy %>% filter(id == 24)
 ```
 
 ```{r}
-# List out note options
-# notes.options <- unique(data.tidy$notes)[-1]
-# notes.options <- c("Work_from_home", "Post_Work_Commitment",
-#                    "Pre_Work_Commitment", "16_00_lecture", "14_00_lecture",
-#                    "Public_Holiday", "Annual_leave", "11_00_lecture",
-#                    "Study_leave", "Conference", "Sick_leave")
-
-# notes.options
-```
-
-```{r}
-# data.tidy <- data.tidy %>% 
-#   mutate(across(all_of(notes.options), ~
-#                   if_else(notes == ., TRUE, FALSE),
-#                 .names = "{.col}"))
-
-# data.tidy
-```
-
-```{r}
-# Create indicator columns for note options
+# Create indicator columns for event options
 data.tidy <- data.tidy %>% 
-  mutate(note_Work_from_home = if_else(notes == "Work_from_home", TRUE, FALSE),
-         note_Post_Work_Commitment = if_else(notes == "Post_Work_Commitment", TRUE, FALSE),
-         note_Pre_Work_Commitment = if_else(notes == "Pre_Work_Commitment", TRUE, FALSE),
-         note_16_00_lecture = if_else(notes == "16_00_lecture", TRUE, FALSE),
-         note_14_00_lecture = if_else(notes == "14_00_lecture", TRUE, FALSE),
-         note_11_00_lecture = if_else(notes == "11_00_lecture", TRUE, FALSE),
-         note_Annual_leave = if_else(notes == "Annual_leave", TRUE, FALSE),
-         note_Sick_leave = if_else(notes == "Sick_leave", TRUE, FALSE),
-         note_Study_leave = if_else(notes == "Study_leave", TRUE, FALSE),
-         note_Public_Holiday = if_else(notes == "Public_Holiday", TRUE, FALSE),
-         note_Conference = if_else(notes == "Conference", TRUE, FALSE))
+  mutate(event_Work_from_home = if_else(event == "Work_from_home", TRUE, FALSE),
+         event_Post_Work_Commitment = if_else(event == "Post_Work_Commitment", TRUE, FALSE),
+         event_Pre_Work_Commitment = if_else(event == "Pre_Work_Commitment", TRUE, FALSE),
+         event_16_00_lecture = if_else(event == "16_00_lecture", TRUE, FALSE),
+         event_14_00_lecture = if_else(event == "14_00_lecture", TRUE, FALSE),
+         event_11_00_lecture = if_else(event == "11_00_lecture", TRUE, FALSE),
+         event_Annual_leave = if_else(event == "Annual_leave", TRUE, FALSE),
+         event_Sick_leave = if_else(event == "Sick_leave", TRUE, FALSE),
+         event_Study_leave = if_else(event == "Study_leave", TRUE, FALSE),
+         event_Public_Holiday = if_else(event == "Public_Holiday", TRUE, FALSE),
+         event_Conference = if_else(event == "Conference", TRUE, FALSE))
 
-data.tidy
+data.tidy %>% select(starts_with("event_"))
+```
+
+```{r}
+# Replace NAs with 0s in indicator columns
+data.tidy <- data.tidy %>% 
+  mutate(across(starts_with("event_"), ~
+                  replace(., is.na(.), 0))) %>% 
+  mutate(event = replace(event, is.na(event), "Standard"))
+
+data.tidy %>% select(starts_with("event_"))
 ```
 
 ```{r}
@@ -108,17 +98,17 @@ data.tidy
 data.collapsed <- data.tidy %>% 
   group_by(id) %>% 
   summarise(
-    note_Work_from_home = max(note_Work_from_home),
-    note_Post_Work_Commitment = max(note_Post_Work_Commitment),
-    note_Pre_Work_Commitment = max(note_Pre_Work_Commitment),
-    note_16_00_lecture = max(note_16_00_lecture),
-    note_14_00_lecture = max(note_14_00_lecture),
-    note_11_00_lecture = max(note_11_00_lecture),
-    note_Annual_leave = max(note_Annual_leave),
-    note_Sick_leave = max(note_Sick_leave),
-    note_Study_leave = max(note_Study_leave),
-    note_Public_Holiday = max(note_Public_Holiday),
-    note_Conference = max(note_Conference),
+    event_Work_from_home = max(event_Work_from_home),
+    event_Post_Work_Commitment = max(event_Post_Work_Commitment),
+    event_Pre_Work_Commitment = max(event_Pre_Work_Commitment),
+    event_16_00_lecture = max(event_16_00_lecture),
+    event_14_00_lecture = max(event_14_00_lecture),
+    event_11_00_lecture = max(event_11_00_lecture),
+    event_Annual_leave = max(event_Annual_leave),
+    event_Sick_leave = max(event_Sick_leave),
+    event_Study_leave = max(event_Study_leave),
+    event_Public_Holiday = max(event_Public_Holiday),
+    event_Conference = max(event_Conference),
     .groups = "drop"
   )
 
@@ -132,24 +122,6 @@ data.combined <- full_join(data.collapsed, data)
 data.combined
 ```
 
-```{r}
-# Replace NAs with 0s in indicator columns.
-data.combined <- data.combined %>% 
-  mutate(across(starts_with("note_"), ~
-                  replace(., is.na(.), 0))) %>% 
-  mutate(notes = replace(notes, is.na(notes), "Standard"))
-
-data.combined
-```
-
-```{r}
-# Pivot wider
-# data.wide <- data.tidy %>%
-#   pivot_wider(id_cols = id,
-#               names_from = notes,
-#               values_from = starts_with("note_"))
-```
-
 # Compile summaries of data
 ```{r}
 # Pivot longer
@@ -158,12 +130,12 @@ data.long <- data.combined %>%
          value = "time", clock.in, clock.out) %>% 
   mutate(event.type = ifelse(event.type == "clock.in", 
                              "Clock In", "Clock Out"),
-         notes = str_split(notes, ",_")) %>% 
-  unnest(notes)
+         event = str_split(event, ",_")) %>% 
+  unnest(event)
 ```
 
 ```{r}
-time.summaries <- data.long %>% group_by(notes, event.type) %>% 
+time.summaries <- data.long %>% group_by(event, event.type) %>% 
   summarise(
     n = n(),
     mean.time = format(mean(time, na.rm = T), "%H:%M"),
@@ -172,22 +144,19 @@ time.summaries <- data.long %>% group_by(notes, event.type) %>%
 time.summaries
 ```
 
+# Overall mean times
 ```{r}
-# Days where I had a 16:00 lecture vs not
-data.combined %>% group_by(note_16_00_lecture) %>%
-  summarise(
-  n = n(),
-  mean.clock.in = mean(clock.in, na.rm = T),
-  mean.clock.out = mean(clock.out, na.rm = T)
-)
+# Calculate mean times
+mean.clock.in <- mean(data$clock.in, na.rm = T)
+mean.clock.in
 ```
 
 ```{r}
-# Overall mean times
-# Calculate mean times
-mean.clock.in <- mean(data$clock.in, na.rm = T)
 mean.clock.out <- mean(data$clock.out, na.rm = T)
+mean.clock.out
+```
 
+```{r}
 # Mean time spent at office
 mean.office.time <- mean.clock.out - mean.clock.in
 mean.office.time
@@ -195,6 +164,7 @@ mean.office.time
 
 # Plot some graphs
 ```{r}
+# Line graph of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
   geom_line(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
@@ -209,6 +179,7 @@ ggplot(data.combined,
 ```
 
 ```{r}
+# Scatter plot of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
   geom_point(aes(y = clock.in, color = "Clock In")) +
@@ -224,7 +195,7 @@ ggplot(data.combined,
 
 ```{r}
 # Plot more detailed plot
-clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes, fill = notes, shape = event.type)) +
+clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
   geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7) +
   scale_color_manual(values = c("Post_Work_Commitment" = "green",
                    "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
