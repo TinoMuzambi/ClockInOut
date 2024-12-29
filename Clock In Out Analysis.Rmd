@@ -285,10 +285,10 @@ clock.in.out.detail
 
 ```{r}
 # Add mean times to plot
-
-# Add to plot
 clock.in.out.detail + 
   geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
-  geom_hline(yintercept = mean.clock.out, color = "red", linetype = "dashed")
+  geom_hline(yintercept = mean.clock.out, color = "red", linetype = "dashed") +
+  geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.in, label = paste(format(mean.clock.in, "%H:%M"))), color = "blue", vjust = -0.5, hjust = 1.2) + 
+  geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.out, label = paste(format(mean.clock.out, "%H:%M"))), color = "red", vjust = -0.5, hjust = 1.2) 
 ```
 
