@@ -79,8 +79,7 @@ data.collapsed <- data.tidy %>%
   )
 
 # Combine dataframes and drop columns no longer needed
-data.combined <- full_join(data.collapsed, data) %>% 
-  select(-notes)
+data.combined <- full_join(data.collapsed, data)
 
 # Replace NAs with 0s in indicator columns.
 data.combined <- data.combined %>% 
@@ -137,3 +136,28 @@ data.combined %>% group_by(note_Pre_Work_Commitment) %>%
     mean.clock.in = mean(clock.in, na.rm = T),
     mean.clock.out = mean(clock.out, na.rm = T)
   )
+
+# Plot some graphs
+ggplot(data.combined,
+       aes(x = date)) +
+  geom_line(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
+  geom_line(aes(y = clock.out, color = "Clock Out"), linewidth = 1) +
+  scale_color_manual(values = c("Clock In" = "blue", "Clock Out" = "red")) +
+  labs(title = "Clock in and Clock Out Times for 2024",
+       x = "Date",
+       y = "Time",
+       color = "Legend") +
+  theme_minimal() +
+  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
+
+ggplot(data.combined,
+       aes(x = date)) +
+  geom_point(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
+  geom_point(aes(y = clock.out, color = "Clock Out"), linewidth = 1) +
+  scale_color_manual(values = c("Clock In" = "blue", "Clock Out" = "red")) +
+  labs(title = "Clock in and Clock Out Times for 2024",
+       x = "Date",
+       y = "Time",
+       color = "Legend") +
+  theme_minimal() +
+  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
