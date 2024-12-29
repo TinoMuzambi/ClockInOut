@@ -247,10 +247,18 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes,
   geom_jitter(size = 4, width = 0.1, height = 0.1, alpha = 0.7) +
   scale_color_manual(values = c("Post_Work_Commitment" = "darkgreen",
                    "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
-                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange")) + 
+                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
+                   labels = c("Work_from_home" = "Work from home", "Post_Work_Commitment" = "Post-work commitment",
+                   "Pre_Work_Commitment" = "Post-work commitment", "16_00_lecture" = "16:00 lecture", "14_00_lecture" = "14:00 lecture",
+                   "Public_Holiday" = "Public holiday", "Annual_leave" = "Annual leave", "11_00_lecture" = "11:00 lecture",
+                   "Study_leave" = "Study leave", "Conference" = "Conference", "Sick_leave" = "Sick leave", "Standard" = "Standard")) + 
   scale_fill_manual(values = c("Post_Work_Commitment" = "darkgreen",
                    "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
-                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange")) +
+                   "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
+                   labels = c("Work_from_home" = "Work from home", "Post_Work_Commitment" = "Post-work commitment",
+                   "Pre_Work_Commitment" = "Post-work commitment", "16_00_lecture" = "16:00 lecture", "14_00_lecture" = "14:00 lecture",
+                   "Public_Holiday" = "Public holiday", "Annual_leave" = "Annual leave", "11_00_lecture" = "11:00 lecture",
+                   "Study_leave" = "Study leave", "Conference" = "Conference", "Sick_leave" = "Sick leave", "Standard" = "Standard")) +
   scale_shape_manual(values = c("Clock In" = 24, "Clock Out" = 25)) +
   labs(title = "Clock in and Clock Out Times for 2024",
        x = "Date",
@@ -260,6 +268,6 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes,
        shape = "Event Type") +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
-ggplotly(clock.in.out.detail)
-# clock.in.out.detail
+# ggplotly(clock.in.out.detail)
+clock.in.out.detail
 ```
