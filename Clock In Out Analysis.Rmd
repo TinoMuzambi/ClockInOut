@@ -12,6 +12,7 @@ library(tidyverse)
 library(lubridate)
 ```
 
+# Read in data
 ```{r}
 # Read data
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
@@ -22,6 +23,7 @@ data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
 data
 ```
 
+# Prepare data for analysis
 ```{r}
 # Rename columns using dplyr
 data <- data %>% rename(
@@ -47,24 +49,17 @@ data
 data <- data %>% 
   mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
          clock.in = parse_date_time(clock.in, orders = "%H:%M"),
-         clock.out = parse_date_time(clock.out, orders = "%H:%M"))
+         clock.out = parse_date_time(clock.out, orders = "%H:%M"),
+         notes = gsub(" ", "_", notes),
+         notes = gsub(":", "_", notes),
+         notes = gsub("-", "_", notes))
 
 data
 ```
 
 ```{r}
-# Rename notes fields
-data.tidy <- data %>% 
-  mutate(notes = gsub(" ", "_", notes)) %>% 
-  mutate(notes = gsub(":", "_", notes)) %>% 
-  mutate(notes = gsub("-", "_", notes))
-
-data.tidy
-```
-
-```{r}
 # Separate options from notes into separate columns
-data.tidy <- data.tidy %>% separate_rows(notes, sep = ",_")
+data.tidy <- data %>% separate_rows(notes, sep = ",_")
 
 data.tidy
 ```
@@ -153,9 +148,8 @@ data.combined
 #               values_from = starts_with("note_"))
 ```
 
-```{r}
 # View summaries of data
-
+```{r}
 # Days where I had a 16:00 lecture vs not
 data.combined %>% group_by(note_16_00_lecture) %>%
   summarise(
@@ -205,8 +199,8 @@ data.combined %>% group_by(note_Pre_Work_Commitment) %>%
   )
 ```
 
-```{r}
 # Plot some graphs
+```{r}
 ggplot(data.combined,
        aes(x = date)) +
   geom_line(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
@@ -233,3 +227,15 @@ ggplot(data.combined,
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
+
+```{r}
+# Pivot longer for more detailed plot
+data.long <- data.combined %>%
+  gather(key = "event.type",
+         value = "time", clock.in, clock.out) %>% 
+  mutate(event.type = ifelse(event.type == "clock.in", 
+                             "Clock In", "Clock Out"),
+         notes = str_split(notes, ", ")) %>% 
+  unnest(notes)
+```
+
