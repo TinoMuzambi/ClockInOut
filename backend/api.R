@@ -48,17 +48,45 @@ data.tidy <- data.tidy %>% separate_rows(notes, sep = ",_")
 
 # Create indicator columns for note options
 data.tidy <- data.tidy %>% 
-  mutate(note_wfh = if_else(notes == "Work_from_home", TRUE, FALSE),
-         note_post.wc = if_else(notes == "Post_Work_Commitment", TRUE, FALSE),
-         note_pre.wc = if_else(notes == "Pre_Work_Commitment", TRUE, FALSE),
-         note_lecture.1600 = if_else(notes == "16_00_lecture", TRUE, FALSE),
-         note_lecture.1400 = if_else(notes == "14_00_lecture", TRUE, FALSE),
-         note_lecture.1100 = if_else(notes == "11_00_lecture", TRUE, FALSE),
-         note_annual.leave = if_else(notes == "Annual_leave", TRUE, FALSE),
-         note_sick.leave = if_else(notes == "Sick_leave", TRUE, FALSE),
-         note_study.leave = if_else(notes == "Study_leave", TRUE, FALSE),
-         note_holiday = if_else(notes == "Public_Holiday", TRUE, FALSE),
-         note_conference = if_else(notes == "Conference", TRUE, FALSE),)
+  mutate(note_Work_from_home = if_else(notes == "Work_from_home", TRUE, FALSE),
+         note_Post_Work_Commitment = if_else(notes == "Post_Work_Commitment", TRUE, FALSE),
+         note_Pre_Work_Commitment = if_else(notes == "Pre_Work_Commitment", TRUE, FALSE),
+         note_16_00_lecture = if_else(notes == "16_00_lecture", TRUE, FALSE),
+         note_14_00_lecture = if_else(notes == "14_00_lecture", TRUE, FALSE),
+         note_11_00_lecture = if_else(notes == "11_00_lecture", TRUE, FALSE),
+         note_Annual_leave = if_else(notes == "Annual_leave", TRUE, FALSE),
+         note_Sick_leave = if_else(notes == "Sick_leave", TRUE, FALSE),
+         note_Study_leave = if_else(notes == "Study_leave", TRUE, FALSE),
+         note_Public_Holiday = if_else(notes == "Public_Holiday", TRUE, FALSE),
+         note_Conference = if_else(notes == "Conference", TRUE, FALSE))
+
+# Group by ID and summarise
+data.collapsed <- data.tidy %>% 
+  group_by(id) %>% 
+  summarise(
+    note_Work_from_home = max(note_Work_from_home),
+    note_Post_Work_Commitment = max(note_Post_Work_Commitment),
+    note_Pre_Work_Commitment = max(note_Pre_Work_Commitment),
+    note_16_00_lecture = max(note_16_00_lecture),
+    note_14_00_lecture = max(note_14_00_lecture),
+    note_11_00_lecture = max(note_11_00_lecture),
+    note_Annual_leave = max(note_Annual_leave),
+    note_Sick_leave = max(note_Sick_leave),
+    note_Study_leave = max(note_Study_leave),
+    note_Public_Holiday = max(note_Public_Holiday),
+    note_Conference = max(note_Conference),
+    .groups = "drop"
+  )
+
+# Combine dataframes
+data.combined <- full_join(data.collapsed, data) %>% 
+  select(-notes)
+
+# Pivot wider
+# data.wide <- data.tidy %>%
+#   pivot_wider(id_cols = id,
+#               names_from = notes,
+#               values_from = starts_with("note_"))
 
 # View structure of data
 str(data)
