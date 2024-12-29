@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lubridate)
 library(plotly)
+library(DT)
 ```
 
 # Read in data
@@ -52,7 +53,8 @@ data <- data %>%
          # Convert events to programmatically friendly strings
          event = gsub(" ", "_", event),
          event = gsub(":", "_", event),
-         event = gsub("-", "_", event))
+         event = gsub("-", "_", event),
+         event = replace(event, is.na(event), "Standard"))
 
 data
 ```
@@ -87,8 +89,7 @@ data.tidy %>% select(starts_with("event_"))
 # Replace NAs with 0s in indicator columns
 data.tidy <- data.tidy %>% 
   mutate(across(starts_with("event_"), ~
-                  replace(., is.na(.), 0))) %>% 
-  mutate(event = replace(event, is.na(event), "Standard"))
+                  replace(., is.na(.), 0)))
 
 data.tidy %>% select(starts_with("event_"))
 ```
@@ -141,7 +142,7 @@ time.summaries <- data.long %>% group_by(event, event.type) %>%
     mean.time = format(mean(time, na.rm = T), "%H:%M"),
   )
 
-time.summaries
+datatable(time.summaries)
 ```
 
 # Overall mean times
