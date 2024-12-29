@@ -7,9 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
 library(tidyverse)
 library(lubridate)
 ```
@@ -45,7 +43,7 @@ data
 ```
 
 ```{r}
-# Cast date, clock.in and clock,out using lubridate and dplyr
+# Cast date, clock.in and clock.out using lubridate and dplyr
 data <- data %>% 
   mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
          clock.in = parse_date_time(clock.in, orders = "%H:%M"),
@@ -225,8 +223,8 @@ ggplot(data.combined,
 ```{r}
 ggplot(data.combined,
        aes(x = date)) +
-  geom_point(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
-  geom_point(aes(y = clock.out, color = "Clock Out"), linewidth = 1) +
+  geom_point(aes(y = clock.in, color = "Clock In")) +
+  geom_point(aes(y = clock.out, color = "Clock Out")) +
   scale_color_manual(values = c("Clock In" = "blue", "Clock Out" = "red")) +
   labs(title = "Clock in and Clock Out Times for 2024",
        x = "Date",
