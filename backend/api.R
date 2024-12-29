@@ -96,10 +96,44 @@ data.combined <- data.combined %>%
 # View structure of data
 str(data)
 
-# View summary of data
+# View summaries of data
+
+# Days where I had a 16:00 lecture vs not
 data.combined %>% group_by(note_16_00_lecture) %>%
   summarise(
   n = n(),
   mean.clock.in = mean(clock.in, na.rm = T),
   mean.clock.out = mean(clock.out, na.rm = T)
 )
+
+# Days where I had a 14:00 lecture vs not
+data.combined %>% group_by(note_14_00_lecture) %>%
+  summarise(
+    n = n(),
+    mean.clock.in = mean(clock.in, na.rm = T),
+    mean.clock.out = mean(clock.out, na.rm = T)
+  )
+
+# Days where I had a 11:00 lecture vs not
+data.combined %>% group_by(note_11_00_lecture) %>%
+  summarise(
+    n = n(),
+    mean.clock.in = mean(clock.in, na.rm = T),
+    mean.clock.out = mean(clock.out, na.rm = T)
+  )
+
+# Days where I had a post-work commitment vs not
+data.combined %>% group_by(note_Post_Work_Commitment) %>%
+  summarise(
+    n = n(),
+    mean.clock.in = mean(clock.in, na.rm = T),
+    mean.clock.out = mean(clock.out, na.rm = T)
+  )
+
+# Days where I had a pre-work commitment vs not
+data.combined %>% group_by(note_Pre_Work_Commitment) %>%
+  summarise(
+    n = n(),
+    mean.clock.in = mean(clock.in, na.rm = T),
+    mean.clock.out = mean(clock.out, na.rm = T)
+  )
