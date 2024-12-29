@@ -244,16 +244,16 @@ data.long <- data.combined %>%
 ```{r}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes, fill = notes, shape = event.type)) +
-  geom_jitter(size = 4, width = 0.1, height = 0.1, alpha = 0.7) +
-  scale_color_manual(values = c("Post_Work_Commitment" = "darkgreen",
-                   "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
+  geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7) +
+  scale_color_manual(values = c("Post_Work_Commitment" = "green",
+                   "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
                    "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
                    labels = c("Work_from_home" = "Work from home", "Post_Work_Commitment" = "Post-work commitment",
                    "Pre_Work_Commitment" = "Post-work commitment", "16_00_lecture" = "16:00 lecture", "14_00_lecture" = "14:00 lecture",
                    "Public_Holiday" = "Public holiday", "Annual_leave" = "Annual leave", "11_00_lecture" = "11:00 lecture",
                    "Study_leave" = "Study leave", "Conference" = "Conference", "Sick_leave" = "Sick leave", "Standard" = "Standard")) + 
-  scale_fill_manual(values = c("Post_Work_Commitment" = "darkgreen",
-                   "Pre_Work_Commitment" = "green", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
+  scale_fill_manual(values = c("Post_Work_Commitment" = "green",
+                   "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
                    "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
                    labels = c("Work_from_home" = "Work from home", "Post_Work_Commitment" = "Post-work commitment",
                    "Pre_Work_Commitment" = "Post-work commitment", "16_00_lecture" = "16:00 lecture", "14_00_lecture" = "14:00 lecture",
@@ -271,3 +271,17 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = notes,
 # ggplotly(clock.in.out.detail)
 clock.in.out.detail
 ```
+
+```{r}
+# Add mean times to plot
+
+# Calculate mean times
+mean.clock.in <- mean(data$clock.in, na.rm = T)
+mean.clock.out <- mean(data$clock.out, na.rm = T)
+
+# Add to plot
+clock.in.out.detail + 
+  geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
+  geom_hline(yintercept = mean.clock.out, color = "red", linetype = "dashed")
+```
+
