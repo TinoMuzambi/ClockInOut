@@ -54,6 +54,7 @@ data <- data %>%
          event = gsub(" ", "_", event),
          event = gsub(":", "_", event),
          event = gsub("-", "_", event),
+         # Replace NA events
          event = replace(event, is.na(event), "Standard"))
 
 data
@@ -147,14 +148,53 @@ datatable(time.summaries)
 
 # Overall mean times
 ```{r}
-# Calculate mean times
-mean.clock.in <- mean(data$clock.in, na.rm = T)
-mean.clock.in
+time.summary <- function(time.field) {
+  # Ensure the input is in POSIXct format
+  time.field <- as.POSIXct(time.field, format = "%H:%M")
+  
+  ## Sort times
+  sorted.times <- sort(time.field)
+  
+  # Calculate minimum and maximum
+  min.time <- sorted.times[1]
+  max.time <- sorted.times[length(sorted.times)]
+  
+  # Calculate median
+  n <- length(sorted.times)
+  median.time <- if (n %% 2 == 1) {
+    sorted.times[(n + 1) / 2]
+  } else {
+    (sorted.times[n / 2] + sorted.times[n / 2 + 1]) / 2
+  }
+  
+  # Calculate mode
+  mode.time <- as.POSIXct(names(sort(table(sorted.times), decreasing = T)[1]), origin = "0000-01-01", tz = "UTC")
+  
+  # Calculate mean
+  mean.time <- mean(time.field, na.rm = T)
+  
+  # Compile output
+  formatted.summary <- tibble(
+    statistic = c("Min", "Median", "Max", "Mode", "Mean"),
+    time = c(format(min.time, "%H:%M"),
+              format(max.time, "%H:%M"),
+              format(median.time, "%H:%M"),
+              format(mode.time, "%H:%M"),
+              format(mean.time, "%H:%M"))
+  )
+  
+  return(formatted.summary)
+}
+```
+
+
+```{r}
+# Clock in summary
+datatable(time.summary(data$clock.in))
 ```
 
 ```{r}
-mean.clock.out <- mean(data$clock.out, na.rm = T)
-mean.clock.out
+datatable(time.summary(data$clock.out))
 ```
 
 ```{r}
