@@ -15,7 +15,7 @@ library(DT)
 ```
 
 # Read in data
-```{r}
+```{r read data}
 # Read data
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
 
@@ -24,7 +24,7 @@ head(data)
 ```
 
 # Prepare data for analysis
-```{r}
+```{r rename columns}
 # Rename columns
 data <- data %>% rename(
   date = Date,
@@ -36,7 +36,7 @@ data <- data %>% rename(
 data
 ```
 
-```{r}
+```{r id column}
 # Add id column
 data <- data %>% 
   mutate(id = rownames(data))
@@ -44,7 +44,7 @@ data <- data %>%
 data
 ```
 
-```{r}
+```{r cast}
 # Cast date, clock.in and clock.out using lubridate
 data <- data %>% 
   mutate(date = parse_date_time(date, orders = "dmy"),
@@ -61,14 +61,14 @@ data
 ```
 
 # Tidy data
-```{r}
+```{r separate}
 # Separate options from event into separate columns
 data.tidy <- data %>% separate_rows(event, sep = ",_")
 
 data.tidy %>% filter(id == 24)
 ```
 
-```{r}
+```{r indicator columns}
 # Create indicator columns for event options
 data.tidy <- data.tidy %>% 
   mutate(event_Work_from_home = if_else(event == "Work_from_home", TRUE, FALSE),
@@ -86,7 +86,7 @@ data.tidy <- data.tidy %>%
 data.tidy %>% select(starts_with("event_"))
 ```
 
-```{r}
+```{r replace nas}
 # Replace NAs with 0s in indicator columns
 data.tidy <- data.tidy %>% 
   mutate(across(starts_with("event_"), ~
@@ -95,8 +95,8 @@ data.tidy <- data.tidy %>%
 data.tidy %>% select(starts_with("event_"))
 ```
 
-```{r}
-# Group by ID and summarise
+```{r collapse}
+# Collapse into original number of rows
 data.collapsed <- data.tidy %>% 
   group_by(id) %>% 
   summarise(
@@ -117,7 +117,7 @@ data.collapsed <- data.tidy %>%
 data.collapsed
 ```
 
-```{r}
+```{r combine}
 # Combine dataframes
 data.combined <- full_join(data.collapsed, data)
 
@@ -125,7 +125,7 @@ data.combined
 ```
 
 # Compile summaries of data
-```{r}
+```{r pivot longer}
 # Pivot longer
 data.long <- data.combined %>%
   gather(key = "event.type",
@@ -136,7 +136,8 @@ data.long <- data.combined %>%
   unnest(event)
 ```
 
-```{r}
+```{r time summaries}
+# Get per event summaries
 time.summaries <- data.long %>% group_by(event, event.type) %>% 
   summarise(
     n = n(),
@@ -147,7 +148,7 @@ datatable(time.summaries)
 ```
 
 # Overall mean times
-```{r}
+```{r time summary function}
 time.summary <- function(time.field) {
   # Ensure the input is in POSIXct format
   time.field <- as.POSIXct(time.field, format = "%H:%M")
@@ -183,18 +184,18 @@ time.summary <- function(time.field) {
 ```
 
 
-```{r}
+```{r clock in summary}
 # Clock in summary
 clock.in.summary <- time.summary(data$clock.in)
 datatable(clock.in.summary)
 ```
 
-```{r}
+```{r clock out summary}
 clock.out.summary <- time.summary(data$clock.out)
 datatable(clock.out.summary)
 ```
 
-```{r}
+```{r mean office time}
 # Mean time spent at office
 mean.clock.in <- parse_date_time(clock.in.summary$time[5], orders = "%H:%M")
 mean.clock.out <- parse_date_time(clock.out.summary$time[5], orders = "%H:%M")
@@ -204,7 +205,7 @@ mean.office.time
 ```
 
 # Plot some graphs
-```{r}
+```{r line graph}
 # Line graph of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
@@ -219,7 +220,7 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
-```{r}
+```{r scatter plot}
 # Scatter plot of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
@@ -234,7 +235,7 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
-```{r}
+```{r detailed scatter plot}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
   geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7) +
@@ -265,7 +266,7 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event,
 clock.in.out.detail
 ```
 
-```{r}
+```{r scatter mean times}
 # Add mean times to plot
 clock.in.out.detail + 
   geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
