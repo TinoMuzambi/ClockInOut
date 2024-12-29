@@ -78,9 +78,14 @@ data.collapsed <- data.tidy %>%
     .groups = "drop"
   )
 
-# Combine dataframes
+# Combine dataframes and drop columns no longer needed
 data.combined <- full_join(data.collapsed, data) %>% 
   select(-notes)
+
+# Replace NAs with 0s in indicator columns.
+data.combined <- data.combined %>% 
+  mutate(across(starts_with("note_"), ~
+                  replace(., is.na(.), 0)))
 
 # Pivot wider
 # data.wide <- data.tidy %>%
@@ -92,7 +97,8 @@ data.combined <- full_join(data.collapsed, data) %>%
 str(data)
 
 # View summary of data
-data %>% summarise(
+data.combined %>% group_by(note_16_00_lecture) %>%
+  summarise(
   n = n(),
   mean.clock.in = mean(clock.in, na.rm = T),
   mean.clock.out = mean(clock.out, na.rm = T)
