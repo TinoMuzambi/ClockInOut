@@ -1,12 +1,30 @@
+---
+title: "Clock In & Out Analysis"
+author: "Tino Muzambi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
 library(tidyverse)
 library(lubridate)
+```
 
+```{r}
 # Read data
-data <- read_csv("backend/data/data.csv", col_types = "cccc") %>% as_tibble()
+data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
+```
 
-# Print data
-# print(data)
+```{r}
+# View data
+data
+```
 
+```{r}
 # Rename columns using dplyr
 data <- data %>% rename(
   date = Date,
@@ -15,25 +33,45 @@ data <- data %>% rename(
   notes = Notes
 )
 
+data
+```
+
+```{r}
 # Add id column
 data <- data %>% 
   mutate(id = rownames(data))
 
+data
+```
+
+```{r}
 # Cast date, clock.in and clock,out using lubridate and dplyr
 data <- data %>% 
   mutate(date = lubridate::parse_date_time(date, orders = "dmy"),
          clock.in = parse_date_time(clock.in, orders = "%H:%M"),
          clock.out = parse_date_time(clock.out, orders = "%H:%M"))
 
+data
+```
+
+```{r}
 # Rename notes fields
 data.tidy <- data %>% 
   mutate(notes = gsub(" ", "_", notes)) %>% 
   mutate(notes = gsub(":", "_", notes)) %>% 
   mutate(notes = gsub("-", "_", notes))
 
+data.tidy
+```
+
+```{r}
 # Separate options from notes into separate columns
 data.tidy <- data.tidy %>% separate_rows(notes, sep = ",_")
 
+data.tidy
+```
+
+```{r}
 # List out note options
 # notes.options <- unique(data.tidy$notes)[-1]
 # notes.options <- c("Work_from_home", "Post_Work_Commitment",
@@ -41,11 +79,19 @@ data.tidy <- data.tidy %>% separate_rows(notes, sep = ",_")
 #                    "Public_Holiday", "Annual_leave", "11_00_lecture",
 #                    "Study_leave", "Conference", "Sick_leave")
 
+# notes.options
+```
+
+```{r}
 # data.tidy <- data.tidy %>% 
 #   mutate(across(all_of(notes.options), ~
 #                   if_else(notes == ., TRUE, FALSE),
 #                 .names = "{.col}"))
 
+# data.tidy
+```
+
+```{r}
 # Create indicator columns for note options
 data.tidy <- data.tidy %>% 
   mutate(note_Work_from_home = if_else(notes == "Work_from_home", TRUE, FALSE),
@@ -60,6 +106,10 @@ data.tidy <- data.tidy %>%
          note_Public_Holiday = if_else(notes == "Public_Holiday", TRUE, FALSE),
          note_Conference = if_else(notes == "Conference", TRUE, FALSE))
 
+data.tidy
+```
+
+```{r}
 # Group by ID and summarise
 data.collapsed <- data.tidy %>% 
   group_by(id) %>% 
@@ -78,23 +128,34 @@ data.collapsed <- data.tidy %>%
     .groups = "drop"
   )
 
-# Combine dataframes and drop columns no longer needed
+data.collapsed
+```
+
+```{r}
+# Combine dataframes
 data.combined <- full_join(data.collapsed, data)
 
+data.combined
+```
+
+```{r}
 # Replace NAs with 0s in indicator columns.
 data.combined <- data.combined %>% 
   mutate(across(starts_with("note_"), ~
                   replace(., is.na(.), 0)))
 
+data.combined
+```
+
+```{r}
 # Pivot wider
 # data.wide <- data.tidy %>%
 #   pivot_wider(id_cols = id,
 #               names_from = notes,
 #               values_from = starts_with("note_"))
+```
 
-# View structure of data
-str(data)
-
+```{r}
 # View summaries of data
 
 # Days where I had a 16:00 lecture vs not
@@ -104,7 +165,9 @@ data.combined %>% group_by(note_16_00_lecture) %>%
   mean.clock.in = mean(clock.in, na.rm = T),
   mean.clock.out = mean(clock.out, na.rm = T)
 )
+```
 
+```{r}
 # Days where I had a 14:00 lecture vs not
 data.combined %>% group_by(note_14_00_lecture) %>%
   summarise(
@@ -112,7 +175,9 @@ data.combined %>% group_by(note_14_00_lecture) %>%
     mean.clock.in = mean(clock.in, na.rm = T),
     mean.clock.out = mean(clock.out, na.rm = T)
   )
+```
 
+```{r}
 # Days where I had a 11:00 lecture vs not
 data.combined %>% group_by(note_11_00_lecture) %>%
   summarise(
@@ -120,7 +185,9 @@ data.combined %>% group_by(note_11_00_lecture) %>%
     mean.clock.in = mean(clock.in, na.rm = T),
     mean.clock.out = mean(clock.out, na.rm = T)
   )
+```
 
+```{r}
 # Days where I had a post-work commitment vs not
 data.combined %>% group_by(note_Post_Work_Commitment) %>%
   summarise(
@@ -128,7 +195,9 @@ data.combined %>% group_by(note_Post_Work_Commitment) %>%
     mean.clock.in = mean(clock.in, na.rm = T),
     mean.clock.out = mean(clock.out, na.rm = T)
   )
+```
 
+```{r}
 # Days where I had a pre-work commitment vs not
 data.combined %>% group_by(note_Pre_Work_Commitment) %>%
   summarise(
@@ -136,7 +205,9 @@ data.combined %>% group_by(note_Pre_Work_Commitment) %>%
     mean.clock.in = mean(clock.in, na.rm = T),
     mean.clock.out = mean(clock.out, na.rm = T)
   )
+```
 
+```{r}
 # Plot some graphs
 ggplot(data.combined,
        aes(x = date)) +
@@ -149,7 +220,9 @@ ggplot(data.combined,
        color = "Legend") +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
+```
 
+```{r}
 ggplot(data.combined,
        aes(x = date)) +
   geom_point(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
@@ -161,3 +234,4 @@ ggplot(data.combined,
        color = "Legend") +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
+```
