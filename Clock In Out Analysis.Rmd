@@ -150,7 +150,28 @@ data.combined
 #               values_from = starts_with("note_"))
 ```
 
-# View summaries of data
+# Compile summaries of data
+```{r}
+# Pivot longer
+data.long <- data.combined %>%
+  gather(key = "event.type",
+         value = "time", clock.in, clock.out) %>% 
+  mutate(event.type = ifelse(event.type == "clock.in", 
+                             "Clock In", "Clock Out"),
+         notes = str_split(notes, ",_")) %>% 
+  unnest(notes)
+```
+
+```{r}
+time.summaries <- data.long %>% group_by(notes, event.type) %>% 
+  summarise(
+    n = n(),
+    mean.time = format(mean(time, na.rm = T), "%H:%M"),
+  )
+
+time.summaries
+```
+
 ```{r}
 # Days where I had a 16:00 lecture vs not
 data.combined %>% group_by(note_16_00_lecture) %>%
@@ -159,46 +180,6 @@ data.combined %>% group_by(note_16_00_lecture) %>%
   mean.clock.in = mean(clock.in, na.rm = T),
   mean.clock.out = mean(clock.out, na.rm = T)
 )
-```
-
-```{r}
-# Days where I had a 14:00 lecture vs not
-data.combined %>% group_by(note_14_00_lecture) %>%
-  summarise(
-    n = n(),
-    mean.clock.in = mean(clock.in, na.rm = T),
-    mean.clock.out = mean(clock.out, na.rm = T)
-  )
-```
-
-```{r}
-# Days where I had a 11:00 lecture vs not
-data.combined %>% group_by(note_11_00_lecture) %>%
-  summarise(
-    n = n(),
-    mean.clock.in = mean(clock.in, na.rm = T),
-    mean.clock.out = mean(clock.out, na.rm = T)
-  )
-```
-
-```{r}
-# Days where I had a post-work commitment vs not
-data.combined %>% group_by(note_Post_Work_Commitment) %>%
-  summarise(
-    n = n(),
-    mean.clock.in = mean(clock.in, na.rm = T),
-    mean.clock.out = mean(clock.out, na.rm = T)
-  )
-```
-
-```{r}
-# Days where I had a pre-work commitment vs not
-data.combined %>% group_by(note_Pre_Work_Commitment) %>%
-  summarise(
-    n = n(),
-    mean.clock.in = mean(clock.in, na.rm = T),
-    mean.clock.out = mean(clock.out, na.rm = T)
-  )
 ```
 
 ```{r}
@@ -239,17 +220,6 @@ ggplot(data.combined,
        color = "Legend") +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
-```
-
-```{r}
-# Pivot longer for more detailed plot
-data.long <- data.combined %>%
-  gather(key = "event.type",
-         value = "time", clock.in, clock.out) %>% 
-  mutate(event.type = ifelse(event.type == "clock.in", 
-                             "Clock In", "Clock Out"),
-         notes = str_split(notes, ",_")) %>% 
-  unnest(notes)
 ```
 
 ```{r}
