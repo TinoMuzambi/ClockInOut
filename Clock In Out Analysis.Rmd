@@ -201,6 +201,17 @@ data.combined %>% group_by(note_Pre_Work_Commitment) %>%
   )
 ```
 
+```{r}
+# Overall mean times
+# Calculate mean times
+mean.clock.in <- mean(data$clock.in, na.rm = T)
+mean.clock.out <- mean(data$clock.out, na.rm = T)
+
+# Mean time spent at office
+mean.office.time <- mean.clock.out - mean.clock.in
+mean.office.time
+```
+
 # Plot some graphs
 ```{r}
 ggplot(data.combined,
@@ -274,10 +285,6 @@ clock.in.out.detail
 
 ```{r}
 # Add mean times to plot
-
-# Calculate mean times
-mean.clock.in <- mean(data$clock.in, na.rm = T)
-mean.clock.out <- mean(data$clock.out, na.rm = T)
 
 # Add to plot
 clock.in.out.detail + 
