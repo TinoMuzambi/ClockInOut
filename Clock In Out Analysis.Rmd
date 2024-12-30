@@ -14,7 +14,18 @@ library(plotly)
 library(DT)
 ```
 
+# Introduction
+
+Towards the end of 2023 I applied and got accepted into the MSc Data Science program at the University of Cape Town. It was this new journey that inspired me to embark on a little side project of my own. The idea behind the project was to pursue a task that would involve all stages of the data analysis pipeline. From  data collection, to data cleaning, to visualising the data and finally using it to tell a story. I also envisioned it as an opportunity to put into practical practice what I would've learned throughout the year as part of my MSc.
+
+I chose the focus of my project to be analysing the times I clocked in and out at the office. I figured this would be interesting to analyse especially considering that as part of my MSc I would have lectures that would sometimes eat into my usual working hours. That coupled with other commitments that come up in life sounded like it would make for an interesting analysis and that's how this project was born.
+
+This notebook demonstrates how I went about cleaning, analysing and plotting the data. A more detailed post will follow on [my blog](https://blog.tinomuzambi.com) which will delve more into the data collection process and follow a more storytelling narrative.
+
 # Read in data
+The data come from a Notion database as a CSV and contain fields for the date of interest, the time I clocked in and out respectively on said date and any notes detailing anything of interest that occurred on said date e.g a lecture, a pre-work commitment, a conference, etcetera.
+
+We begin by reading in the data and preventing automatic casting as this leads to the time fields being cast to a `difftime` object which, for our purposes isn't conducive for analysis. Therefore we use the `col_types` argument to retain all data as character vectors. We also convert the data to a tibble for the [nice qualities](https:://link.com) that tibbles provide.
 ```{r read data}
 # Read data
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
@@ -22,6 +33,32 @@ data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
 # View data
 head(data)
 ```
+
+```{r}
+# Structure of the data
+str(data)
+```
+
+```{r}
+unique(data$Notes)
+```
+
+
+The data contain 250 entries where each entry is a day and all fields are stored as character vectors. The notes field is a multi-select field and the various options for it are a comma separated character vector of any number of the following:
+
+  - Work from home
+  - Pre-work commitment
+  - Post-work commitment
+  - Annual leave
+  - Sick leave
+  - Study leave
+  - Public holiday
+  - Conference
+  - 11:00 lecture
+  - 14:00 lecture
+  - 16:00 lecture
+
+Days with the any of work from home, annual leave, sick leave, public holiday and conference will likely not have any clock in/out times since I won't go into the office during these occasions.
 
 # Prepare data for analysis
 ```{r rename columns}
