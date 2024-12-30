@@ -61,6 +61,8 @@ The data contain 250 entries where each entry is a day and all fields are stored
 Days with the any of work from home, annual leave, sick leave, public holiday and conference will likely not have any clock in/out times since I won't go into the office during these occasions.
 
 # Prepare data for analysis
+In order to prepare the data for analysis, a few cleaning steps are necessary. We begin by renaming the columns to make them easier to work with and more representative of the data they represent.
+
 ```{r rename columns}
 # Rename columns
 data <- data %>% rename(
@@ -73,6 +75,7 @@ data <- data %>% rename(
 data
 ```
 
+We also add an ID column to make identifying rows easier.
 ```{r id column}
 # Add id column
 data <- data %>% 
@@ -81,6 +84,9 @@ data <- data %>%
 data
 ```
 
+We then manually cast fields to appropriate data types. Here we take advantage of lubridate's excellent datetime casting capabilities. We use the `parse_date_time` function to cast both the date and clock in/out time fields displaying the versatility of this function and this library. This casts the fields into POSIXct class which allows us to perform various datetime functions on them. However, here we run into a characteristic of R that's less than ideal.
+
+When working with dates and times in R, the aforementioned POSIXct class is used and this class mandates having both a date portion and a time portion. This means that date fields are required to have some arbitrary time portion and similarly time fields are required to have some arbitrary date portion. This is why you'll often see time fields beginning with 1970-01-01. TODO: explain more. This ultimately has no effect on functionality but is just a nuisance when it comes to displaying as it requires reformatting to exclude the unwanted portion.
 ```{r cast}
 # Cast date, clock.in and clock.out using lubridate
 data <- data %>% 
@@ -98,6 +104,9 @@ data
 ```
 
 # Tidy data
+With those basic steps complete, we now begin moving towards getting the data into a "tidy" format. Tidy data is a standard way of structuring data that makes it easier to analyze, visualize, and model. The key principle of tidy data is that each variable forms a *column*, each observation forms a *row*, and each type of observational unit forms a *table*.
+
+We will begin by dealing with the event column by extracting the different possible events into their own columns.
 ```{r separate}
 # Separate options from event into separate columns
 data.tidy <- data %>% separate_rows(event, sep = ",_")
@@ -312,3 +321,6 @@ clock.in.out.detail +
   geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.out, label = paste(format(mean.clock.out, "%H:%M"))), color = "red", vjust = -0.5, hjust = 1.2) 
 ```
 
+# References
+
+  - Wickham, H. (2014). *Tidy Data*. *Journal of Statistical Software*, 59(10), 1-23. [https://www.jstatsoft.org/article/view/v059i10](https://www.jstatsoft.org/article/view/v059i10)
