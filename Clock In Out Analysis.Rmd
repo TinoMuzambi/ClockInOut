@@ -209,8 +209,8 @@ mean.office.time
 # Line graph of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
-  geom_line(aes(y = clock.in, color = "Clock In"), linewidth = 1) +
-  geom_line(aes(y = clock.out, color = "Clock Out"), linewidth = 1) +
+  geom_line(aes(y = clock.in, color = "Clock In"), linewidth = 1, na.rm = T) +
+  geom_line(aes(y = clock.out, color = "Clock Out"), linewidth = 1, na.rm = T) +
   scale_color_manual(values = c("Clock In" = "blue", "Clock Out" = "red")) +
   labs(title = "Clock in and Clock Out Times for 2024",
        x = "Date",
@@ -224,8 +224,8 @@ ggplot(data.combined,
 # Scatter plot of clock in and out times
 ggplot(data.combined,
        aes(x = date)) +
-  geom_point(aes(y = clock.in, color = "Clock In")) +
-  geom_point(aes(y = clock.out, color = "Clock Out")) +
+  geom_point(aes(y = clock.in, color = "Clock In"), na.rm = T) +
+  geom_point(aes(y = clock.out, color = "Clock Out"), na.rm = T) +
   scale_color_manual(values = c("Clock In" = "blue", "Clock Out" = "red")) +
   labs(title = "Clock in and Clock Out Times for 2024",
        x = "Date",
@@ -238,7 +238,7 @@ ggplot(data.combined,
 ```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
-  geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7) +
+  geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7, na.rm = T) +
   scale_color_manual(values = c("Post_Work_Commitment" = "green",
                    "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
                    "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
