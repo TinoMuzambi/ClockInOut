@@ -106,7 +106,7 @@ data
 # Tidy data
 With those basic steps complete, we now begin moving towards getting the data into a "tidy" format. Tidy data is a standard way of structuring data that makes it easier to analyze, visualize, and model. The key principle of tidy data is that each variable forms a *column*, each observation forms a *row*, and each type of observational unit forms a *table*.
 
-We will begin by dealing with the event column by extracting the different possible events into their own columns.
+For our use case, tidying the data will mean dealing with the event column by extracting the different possible events into their own columns. We start by splitting the fields in the event column for cases where there were multiple events in one day.
 ```{r separate}
 # Separate options from event into separate columns
 data.tidy <- data %>% separate_rows(event, sep = ",_")
