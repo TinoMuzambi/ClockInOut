@@ -31,7 +31,7 @@ We begin by reading in the data and preventing automatic casting as this leads t
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
 
 # View data
-head(data)
+data %>% head
 ```
 
 ```{r}
@@ -72,7 +72,7 @@ data <- data %>% rename(
   event = Notes
 )
 
-data
+data %>% head
 ```
 
 We also add an ID column to make identifying rows easier.
@@ -81,7 +81,7 @@ We also add an ID column to make identifying rows easier.
 data <- data %>% 
   mutate(id = rownames(data))
 
-data
+data %>% head
 ```
 
 We then manually cast fields to appropriate data types. Here we take advantage of lubridate's excellent datetime casting capabilities. We use the `parse_date_time` function to cast both the date and clock in/out time fields displaying the versatility of this function and this library. This casts the fields into POSIXct class which allows us to perform various datetime functions on them. However, here we run into a characteristic of R that's less than ideal.
@@ -100,7 +100,7 @@ data <- data %>%
          # Replace NA events
          event = replace(event, is.na(event), "Standard"))
 
-data
+data %>% head
 ```
 
 # Tidy data
@@ -111,7 +111,7 @@ For our use case, tidying the data will mean dealing with the event column by ex
 # Separate options from event into separate columns
 data.tidy <- data %>% separate_rows(event, sep = ",_")
 
-data.tidy %>% filter(id == 24)
+data.tidy %>% filter(id == 24) %>% head
 ```
 
 Next we create binary indicator columns for each type of event. This moves us closer to our data being tidy with one column for each event where it takes on the value of true or false depending on if that event occured on that day or not.
@@ -130,7 +130,7 @@ data.tidy <- data.tidy %>%
          event_Public_Holiday = if_else(event == "Public_Holiday", TRUE, FALSE),
          event_Conference = if_else(event == "Conference", TRUE, FALSE))
 
-data.tidy %>% select(starts_with("event_"))
+data.tidy %>% select(starts_with("event_")) %>% head
 ```
 
 We replace any NAs in the indicator columns with 0 because those values mean the same thing (that event did not occur on that day) and the data should clearly reflect that.
@@ -140,7 +140,7 @@ data.tidy <- data.tidy %>%
   mutate(across(starts_with("event_"), ~
                   replace(., is.na(.), 0)))
 
-data.tidy %>% select(starts_with("event_"))
+data.tidy %>% select(starts_with("event_")) %>% head
 ```
 
 We then collapse the data back into the original number of rows to keep with the requirements of tidy data. However, we do this by grouping by the ID and using the max aggregate function on the event columns which means we lose the other columns.
@@ -163,7 +163,7 @@ data.collapsed <- data.tidy %>%
     .groups = "drop"
   )
 
-data.collapsed
+data.collapsed %>% head
 ```
 
 We remedy this by performing a full join on the original data.
@@ -171,7 +171,7 @@ We remedy this by performing a full join on the original data.
 # Combine dataframes
 data.combined <- full_join(data.collapsed, data)
 
-data.combined
+data.combined %>% head
 ```
 
 # Compile summaries of data
@@ -184,6 +184,8 @@ data.long <- data.combined %>%
                              "Clock In", "Clock Out"),
          event = str_split(event, ",_")) %>% 
   unnest(event)
+
+data.long %>% head
 ```
 
 ```{r time summaries}
