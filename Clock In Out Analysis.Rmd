@@ -86,7 +86,7 @@ data %>% head
 
 We then manually cast fields to appropriate data types. Here we take advantage of lubridate's excellent datetime casting capabilities. We use the `parse_date_time` function to cast both the date and clock in/out time fields displaying the versatility of this function and this library. This casts the fields into POSIXct class which allows us to perform various datetime functions on them. However, here we run into a characteristic of R that's less than ideal.
 
-When working with dates and times in R, the aforementioned POSIXct class is used and this class mandates having both a date portion and a time portion. This means that date fields are required to have some arbitrary time portion and similarly time fields are required to have some arbitrary date portion. This is why you'll often see time fields beginning with 1970-01-01. TODO: explain more. This ultimately has no effect on functionality but is just a nuisance when it comes to displaying as it requires reformatting to exclude the unwanted portion.
+When working with dates and times in R, the aforementioned POSIXct class is used and this class mandates having both a date portion and a time portion. This means that date fields are required to have some arbitrary time portion and similarly time fields are required to have some arbitrary date portion. This is why you'll often see time fields beginning with 1970-01-01 because that is the Unix epoch, a reference point for measuring time in seconds. This ultimately has no effect on functionality but is just a nuisance when it comes to displaying as it requires reformatting to exclude the unwanted portion.
 ```{r cast}
 # Cast date, clock.in and clock.out using lubridate
 data <- data %>% 
@@ -175,6 +175,7 @@ data.combined %>% head
 ```
 
 # Compile summaries of data
+With the data now being in a tidy format, we are ready to proceed to plotting and analysing. For the first analysis we will look at clock in and out times per event. In order to do this we need to pivot the data longer such that there is one clock in/out event per row which makes this analysis easier.
 ```{r pivot longer}
 # Pivot longer
 data.long <- data.combined %>%
@@ -198,8 +199,10 @@ time.summaries <- data.long %>% group_by(event, event.type) %>%
 
 datatable(time.summaries)
 ```
+From this we can see that the times largely correspond with the event as expected. We will move on to look at the overall clock in/out time stats.
 
-# Overall mean times
+To do this, we could have used the built-in base R summary function, however we found that when working with time fields, it formats the fields in a less than ideal way as alluded to before. To remedy this, we built a custom summary function that calculates the statistics and then tabulates them formatting them before return the table. 
+# Overall times stats
 ```{r time summary function}
 time.summary <- function(time.field) {
   # Ensure the input is in POSIXct format
@@ -235,18 +238,19 @@ time.summary <- function(time.field) {
 }
 ```
 
-
+## Clock in summary
 ```{r clock in summary}
-# Clock in summary
 clock.in.summary <- time.summary(data$clock.in)
 datatable(clock.in.summary)
 ```
 
+## Clock out summary
 ```{r clock out summary}
 clock.out.summary <- time.summary(data$clock.out)
 datatable(clock.out.summary)
 ```
 
+We extract some useful insights from the clock in/out summaries. We can then, using the mean clock in/out times, determine how much time I spend in the office on average.
 ```{r mean office time}
 # Mean time spent at office
 mean.clock.in <- parse_date_time(clock.in.summary$time[5], orders = "%H:%M")
@@ -257,6 +261,7 @@ mean.office.time
 ```
 
 # Plot some graphs
+Finally we can visualise the data. We start with a line graph that shows the clock in/out times over the year. This visualisation is useful for seeing the day to day trends but is not as effective because of the breaks that occur on days where I didn't go into the office.
 ```{r line graph, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Line graph of clock in and out times
 ggplot(data.combined,
@@ -272,6 +277,7 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
+A scatter plot works better in this scenario and allows you to still see the general trend but does not seem disjointed for the days without data.
 ```{r scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Scatter plot of clock in and out times
 ggplot(data.combined,
@@ -287,6 +293,9 @@ ggplot(data.combined,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
+However, we can fit a lot more data onto this plot. In the next plot, we plot the same scatter plot as before however, we differentiate between clock in and clock out points using shape instead of colour. This frees us up to use colour for the different types of event. We also then add the mean clock in/out times as a horizontal line.
+
+We use `geom_jitter` to jitter overlapping points so it is visible when there are multiple events on one day. We also use transparency to show multiple events.
 ```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
@@ -305,7 +314,7 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event,
                    "Pre_Work_Commitment" = "Post-work commitment", "16_00_lecture" = "16:00 lecture", "14_00_lecture" = "14:00 lecture",
                    "Public_Holiday" = "Public holiday", "Annual_leave" = "Annual leave", "11_00_lecture" = "11:00 lecture",
                    "Study_leave" = "Study leave", "Conference" = "Conference", "Sick_leave" = "Sick leave", "Standard" = "Standard")) +
-  scale_shape_manual(values = c("Clock In" = 24, "Clock Out" = 25)) +
+  scale_shape_manual(values = c("Clock In" = 21, "Clock Out" = 25)) +
   labs(title = "Clock in and Clock Out Times for 2024",
        x = "Date",
        y = "Time",
@@ -315,7 +324,6 @@ clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event,
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 # ggplotly(clock.in.out.detail)
-clock.in.out.detail
 ```
 
 ```{r scatter mean times, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
