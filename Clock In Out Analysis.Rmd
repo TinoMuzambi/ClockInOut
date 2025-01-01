@@ -114,6 +114,7 @@ data.tidy <- data %>% separate_rows(event, sep = ",_")
 data.tidy %>% filter(id == 24)
 ```
 
+Next we create binary indicator columns for each type of event. This moves us closer to our data being tidy with one column for each event where it takes on the value of true or false depending on if that event occured on that day or not.
 ```{r indicator columns}
 # Create indicator columns for event options
 data.tidy <- data.tidy %>% 
@@ -132,6 +133,7 @@ data.tidy <- data.tidy %>%
 data.tidy %>% select(starts_with("event_"))
 ```
 
+We replace any NAs in the indicator columns with 0 because those values mean the same thing (that event did not occur on that day) and the data should clearly reflect that.
 ```{r replace nas}
 # Replace NAs with 0s in indicator columns
 data.tidy <- data.tidy %>% 
@@ -141,6 +143,7 @@ data.tidy <- data.tidy %>%
 data.tidy %>% select(starts_with("event_"))
 ```
 
+We then collapse the data back into the original number of rows to keep with the requirements of tidy data. However, we do this by grouping by the ID and using the max aggregate function on the event columns which means we lose the other columns.
 ```{r collapse}
 # Collapse into original number of rows
 data.collapsed <- data.tidy %>% 
@@ -163,6 +166,7 @@ data.collapsed <- data.tidy %>%
 data.collapsed
 ```
 
+We remedy this by performing a full join on the original data.
 ```{r combine}
 # Combine dataframes
 data.combined <- full_join(data.collapsed, data)
