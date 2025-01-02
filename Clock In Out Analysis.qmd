@@ -100,7 +100,7 @@ We also add an ID column to make identifying rows easier.
 ```{r id column}
 # Add id column
 data <- data %>% 
-  mutate(id = as.integer(rownames(data)))
+  mutate(id = as.numeric(rownames(data)))
 
 data %>% head
 ```
@@ -217,6 +217,7 @@ data.long <- data.combined %>%
 data.long %>% head
 ```
 
+## Per Event Summaries
 ```{r time summaries}
 # Get per event summaries
 time.summaries <- data.long %>% group_by(event, event.type) %>% 
@@ -302,32 +303,36 @@ Finally we can visualise the data. We start with a scatter plot that shows the t
 # Calculate time spent in office
 daily.hours <- data.tidy %>%
   dplyr::group_by(date) %>% 
-  mutate(office.time = difftime(clock.out, clock.in, units = "hours")) %>% 
-  select(c(clock.in, clock.out, office.time, event))
+  mutate(office.time = as.numeric(difftime(clock.out, clock.in, units = "hours"))) %>% 
+  select(c(clock.in, clock.out, office.time, event, date))
 
 # Define plot colours
 plot.colours <- c("Post_Work_Commitment" = "green",
-                   "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", 
-                   "14_00_lecture" = "red", "11_00_lecture" = "black",
-                   "Study_leave" = "turquoise", "Conference" = "purple",
-                   "Standard" = "orange")
+                  "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", 
+                  "14_00_lecture" = "red", "11_00_lecture" = "black",
+                  "Study_leave" = "turquoise", "Conference" = "purple",
+                  "Standard" = "orange")
 
 # Define nicer labels
-plot.labels <- c("Work_from_home" = "Work from home", 
-                              "Post_Work_Commitment" = "Post-work commitment",
-                   "Pre_Work_Commitment" = "Post-work commitment", 
-                   "16_00_lecture" = "16:00 lecture", 
-                   "14_00_lecture" = "14:00 lecture",
-                   "Public_Holiday" = "Public holiday", 
-                   "Annual_leave" = "Annual leave", 
-                   "11_00_lecture" = "11:00 lecture",
-                   "Study_leave" = "Study leave", "Conference" = "Conference", 
-                   "Sick_leave" = "Sick leave", "Standard" = "Standard")
+plot.labels <- c("Work_from_home" = "Work from home",
+                 "Post_Work_Commitment" = "Post-work commitment",
+                 "Pre_Work_Commitment" = "Post-work commitment",
+                 "16_00_lecture" = "16:00 lecture",
+                 "14_00_lecture" = "14:00 lecture",
+                 "Public_Holiday" = "Public holiday",
+                 "Annual_leave" = "Annual leave",
+                 "11_00_lecture" = "11:00 lecture",
+                 "Study_leave" = "Study leave", "Conference" = "Conference",
+                 "Sick_leave" = "Sick leave", "Standard" = "Standard")
 
 # Plot graph
-office.time.plot <- ggplot(daily.hours, aes(x = date, y = office.time, colour = event)) +
+office.time.plot <- ggplot(daily.hours, aes(x = date, 
+                                            y = office.time, 
+                                            colour = event)) +
   geom_point(size = 3, alpha = 0.7,na.rm = T) +
-  geom_hline(yintercept = mean.office.time, linetype = "dashed", size = 1) + 
+  geom_hline(yintercept = mean.office.time, 
+             linetype = "dashed", 
+             linewidth = 1) + 
   scale_color_manual(values = plot.colours, labels = plot.labels) + 
   labs(title = "Time Spent in Office for 2024",
        x = "Date",
@@ -338,11 +343,17 @@ office.time.plot <- ggplot(daily.hours, aes(x = date, y = office.time, colour = 
 ```
 
 ```{r office time graph, fig.width=13, fig.height=6, out.width="100%", out.height="auto"}
+# Get per event mean office time
 event.time <- daily.hours %>% 
   dplyr::group_by(event) %>% 
   summarise(mean.hours = mean(office.time, na.rm = T))
 
-office.time.plot + geom_hline(data = event.time, aes(yintercept = mean.hours, colour = event), linetype = "dashed", alpha = 0.7)
+# Add mean office time per event to plot
+office.time.plot + geom_hline(data = event.time, 
+                              aes(yintercept = mean.hours, colour = event), 
+                              linetype = "dashed",
+                              alpha = 0.7,
+                              na.rm = T)
 ```
 
 
