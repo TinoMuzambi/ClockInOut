@@ -410,3 +410,12 @@ Finally, an interactive version of the above plot using Plotly.
 ```{r}
 ggplotly(clock.in.out.detail, tooltip = c("x", "y", "colour", "shape"))
 ```
+
+# Improvements and Future Work
+
+This has been an insightful project to work on but there are several ideas for improvements as I resume collecting data for 2025.
+
+  - I usually begin working from home around 08:00 and only leave home later partly for reducing commute time. This can be integrated into the analysis.
+  - Incorporating times for leaving home and arriving at the office and vice versa would make for insights on time spent commuting.
+  - Several improvements for the data collection process which will be detailed in the blog post to follow.
+  - I invite you to also suggest improvements and things I could have done differently.
