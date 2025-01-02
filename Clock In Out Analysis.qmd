@@ -296,9 +296,9 @@ mean.office.time
 
 # Plot some graphs
 
-Finally we can visualise the data. We start with a scatter plot that shows the time spent in office throughout the year. The mean time is also overlayed on the plot.
+Finally we can visualise the data. We start with a scatter plot that shows the time spent in office throughout the year. The mean time per event and overall mean is also overlayed on the plot.
 
-```{r office time graph, fig.width=13, fig.height=6, out.width="100%", out.height="auto"}
+```{r office time}
 # Calculate time spent in office
 daily.hours <- data.tidy %>%
   dplyr::group_by(date) %>% 
@@ -309,7 +309,7 @@ daily.hours <- data.tidy %>%
 plot.colours <- c("Post_Work_Commitment" = "green",
                    "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", 
                    "14_00_lecture" = "red", "11_00_lecture" = "black",
-                   "Study_leave" = "yellow", "Conference" = "purple",
+                   "Study_leave" = "turquoise", "Conference" = "purple",
                    "Standard" = "orange")
 
 # Define nicer labels
@@ -325,9 +325,9 @@ plot.labels <- c("Work_from_home" = "Work from home",
                    "Sick_leave" = "Sick leave", "Standard" = "Standard")
 
 # Plot graph
-ggplot(daily.hours, aes(x = date, y = office.time, colour = event)) +
+office.time.plot <- ggplot(daily.hours, aes(x = date, y = office.time, colour = event)) +
   geom_point(size = 3, alpha = 0.7,na.rm = T) +
-  geom_hline(yintercept = mean.office.time, linetype = "dashed", alpha = 0.5) + 
+  geom_hline(yintercept = mean.office.time, linetype = "dashed", size = 1) + 
   scale_color_manual(values = plot.colours, labels = plot.labels) + 
   labs(title = "Time Spent in Office for 2024",
        x = "Date",
@@ -336,6 +336,15 @@ ggplot(daily.hours, aes(x = date, y = office.time, colour = event)) +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
+
+```{r office time graph, fig.width=13, fig.height=6, out.width="100%", out.height="auto"}
+event.time <- daily.hours %>% 
+  dplyr::group_by(event) %>% 
+  summarise(mean.hours = mean(office.time, na.rm = T))
+
+office.time.plot + geom_hline(data = event.time, aes(yintercept = mean.hours, colour = event), linetype = "dashed", alpha = 0.7)
+```
+
 
 Next we plot a line graph that shows the clock in/out times over the year. This visualisation is useful for seeing the day to day trends but is not as effective because of the breaks that occur on days where I didn't go into the office.
 
@@ -385,7 +394,7 @@ However, we can fit a lot more data onto this plot. In the next plot, we plot th
 
 We use `geom_jitter` to disperse points so it is visible when there are multiple events on one day. We also use transparency to help show when this is the case.
 
-```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
+```{r detailed scatter plot}
 # Plot more detailed plot
 set.seed(2025) # Set seed for jitter
 
