@@ -342,16 +342,23 @@ clock.in.out.detail <- ggplot(data.long,
        shape = "Event Type") +
   theme_minimal() +
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
-# ggplotly(clock.in.out.detail)
 ```
 
 ```{r scatter mean times, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Add mean times to plot
-clock.in.out.detail + 
+clock.in.out.detail <- clock.in.out.detail + 
   geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
   geom_hline(yintercept = mean.clock.out, color = "red", linetype = "dashed") +
   geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.in, label = paste(format(mean.clock.in, "%H:%M"))), color = "blue", 
             vjust = -0.5, hjust = 1.2) + 
   geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.out, label = paste(format(mean.clock.out, "%H:%M"))), color = "red", 
-            vjust = -0.5, hjust = 1.2) 
+            vjust = -0.5, hjust = 1.2)
+
+clock.in.out.detail
 ```
+
+Finally, an interactive version of the above plot.
+```{r}
+ggplotly(clock.in.out.detail)
+```
+
