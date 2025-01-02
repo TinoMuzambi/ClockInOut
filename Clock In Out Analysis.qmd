@@ -155,7 +155,7 @@ data.tidy <- data.tidy %>%
 data.tidy %>% select(starts_with("event_")) %>% head
 ```
 
-We then collapse the data back into the original number of rows to keep with the requirements of tidy data. However, we do this by grouping by the ID and using the max aggregate function on the event columns which means we lose the other columns.
+We then collapse the data back into the original number of rows to keep with the requirements of tidy data. However, we do this by grouping by the ID and using the max aggregate function on the event columns which means we lose the other columns. We remedy this by then performing a full join on the original data.
 ```{r collapse}
 # Collapse into original number of rows
 data.collapsed <- data.tidy %>% 
@@ -178,7 +178,6 @@ data.collapsed <- data.tidy %>%
 data.collapsed %>% head
 ```
 
-We remedy this by performing a full join on the original data.
 ```{r combine}
 # Combine dataframes
 data.combined <- full_join(data.collapsed, data)
