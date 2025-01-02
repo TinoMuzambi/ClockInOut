@@ -307,7 +307,7 @@ ggplot(data.combined,
 However, we can fit a lot more data onto this plot. In the next plot, we plot the same scatter plot as before however, we differentiate between clock in and clock out points using shape instead of colour. This frees us up to use colour for the different types of event. We also then add the mean clock in/out times as a horizontal line.
 
 We use `geom_jitter` to disperse points so it is visible when there are multiple events on one day. We also use transparency to help show when this is the case.
-```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
+```{r detailed scatter plot, fig.width=27, fig.height=17, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 plot.colours <- c("Post_Work_Commitment" = "green",
                    "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", 
@@ -343,9 +343,9 @@ clock.in.out.detail <- ggplot(data.long,
   theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 ```
 
-```{r scatter mean times, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
+```{r scatter mean times, fig.width=27, fig.height=17, out.width="100%", out.height="auto"}
 # Add mean times to plot
-clock.in.out.detail <- clock.in.out.detail + 
+clock.in.out.detail.static <- clock.in.out.detail + 
   geom_hline(yintercept = mean.clock.in, color = "blue", linetype = "dashed") + 
   geom_hline(yintercept = mean.clock.out, color = "red", linetype = "dashed") +
   geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.in, label = paste(format(mean.clock.in, "%H:%M"))), color = "blue", 
@@ -353,7 +353,12 @@ clock.in.out.detail <- clock.in.out.detail +
   geom_text(aes(x = as.POSIXct("2024-01-01"), y = mean.clock.out, label = paste(format(mean.clock.out, "%H:%M"))), color = "red", 
             vjust = -0.5, hjust = 1.2)
 
-clock.in.out.detail
+clock.in.out.detail.static
+```
+
+```{r}
+# Save plot
+# ggsave("Clock In Out Chart.png", clock.in.out.detail.static, width = 2560, height = 1600, units = "px", bg = "white", scale = 1.5)
 ```
 
 Finally, an interactive version of the above plot.
