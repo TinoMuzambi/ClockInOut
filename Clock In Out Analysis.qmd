@@ -367,6 +367,6 @@ clock.in.out.detail.static
 
 Finally, an interactive version of the above plot using Plotly.
 ```{r}
-ggplotly(clock.in.out.detail)
+ggplotly(clock.in.out.detail, tooltip = c("x", "y", "colour", "shape"))
 ```
 
