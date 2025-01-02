@@ -29,16 +29,18 @@ library(scales)
 
 # Introduction
 
-Towards the end of 2023 I applied and got accepted into the MSc Data Science program at the University of Cape Town. It was this new journey that inspired me to embark on a little side project of my own. The idea behind the project was to pursue a task that would involve all stages of the data analysis pipeline. From  data collection, to data cleaning, to visualising the data and finally using it to tell a story. I also envisioned it as an opportunity to put into practical practice what I would've learned throughout the year as part of my MSc.
+Towards the end of 2023 I applied and got accepted into the MSc Data Science program at the University of Cape Town. It was this new journey that inspired me to embark on a little side project of my own. The idea behind the project was to pursue a task that would involve all stages of the data analysis pipeline. From data collection, to data cleaning, to visualising the data and finally using it to tell a story. I also envisioned it as an opportunity to put into practical practice what I would've learned throughout the year as part of my MSc.
 
 I chose the focus of my project to be analysing the times I clocked in and out at the office. I figured this would be interesting to analyse especially considering that as part of my MSc I would have lectures that would sometimes eat into my usual working hours. That coupled with other commitments that come up in life sounded like it would make for an interesting analysis and that's how this project was born.
 
 This notebook demonstrates how I went about cleaning, analysing and plotting the data. A more detailed post will follow on [my blog](https://blog.tinomuzambi.com) which will delve more into the data collection process and follow a more storytelling narrative.
 
 # Read in data
+
 The data come from a Notion database as a CSV and contain fields for the date of interest, the time I clocked in and out respectively on said date and any notes detailing anything of interest that occurred on said date e.g a lecture, a pre-work commitment, a conference, etcetera.
 
 We begin by reading in the data and preventing automatic casting as this leads to the time fields being cast to a `difftime` object which, for our purposes isn't conducive for analysis. Therefore we use the `col_types` argument to retain all data as character vectors. We also convert the data to a tibble for the nice qualities that tibbles provide.[@tibble]
+
 ```{r read data}
 # Read data
 data <- read_csv("data/data.csv", col_types = "cccc") %>% as_tibble()
@@ -56,24 +58,29 @@ str(data)
 unique(data$Notes)
 ```
 
-
 The data contain 250 entries where each entry is a day and all fields are stored as character vectors. The notes field is a multi-select field and the various options for it are a comma separated character vector of any number of the following:
 
-  - Work from home
-  - Pre-work commitment
-  - Post-work commitment
-  - Annual leave
-  - Sick leave
-  - Study leave
-  - Public holiday
-  - Conference
-  - 11:00 lecture
-  - 14:00 lecture
-  - 16:00 lecture
+| Event | Description |
+|---------------------------|---------------------------------------------|
+| **Events where I am in office** |
+| 11:00 lecture | A day where I had a 11:00 lecture |
+| 14:00 lecture | A day where I had a 14:00 lecture |
+| 16:00 lecture | A day where I had a 16:00 lecture |
+| Study leave | A day or part of a day where I was on study leave |
+| Pre-work commitment | A day where I had some commitment to tend to before going into the office |
+| Post-work commitment | A day where I had some commitment to tend to after going into the office |
+| Standard | A day where there were none of the above events |
+| **Events where I am not in office** |
+| Work from home | A day where I worked from home |
+| Annual leave | A day where I was on annual leave |
+| Sick leave | A day where I was on sick leave |
+| Public holiday | A day that was a public holiday |
+| Conference | A day or part of a day where I was away at a conference |
 
-Days with the any of work from home, annual leave, sick leave, public holiday and conference will likely not have any clock in/out times since I won't go into the office during these occasions.
+: Table of event descriptions
 
 # Prepare data for analysis
+
 In order to prepare the data for analysis, a few cleaning steps are necessary. We begin by renaming the columns to make them easier to work with and more representative of the data they represent.
 
 ```{r rename columns}
@@ -89,6 +96,7 @@ data %>% head
 ```
 
 We also add an ID column to make identifying rows easier.
+
 ```{r id column}
 # Add id column
 data <- data %>% 
@@ -100,6 +108,7 @@ data %>% head
 We then manually cast fields to appropriate data types. Here we take advantage of Lubridate's excellent datetime casting capabilities. We use the `parse_date_time` function to cast both the date and clock in/out time fields displaying the versatility of this function and this library. This casts the fields into POSIXct class which allows us to perform various datetime functions on them. However, here we run into a characteristic of R that's less than ideal.
 
 When working with dates and times in R, the aforementioned POSIXct class is used and this class mandates having both a date portion and a time portion. This means that date fields are required to have some arbitrary time portion and similarly time fields are required to have some arbitrary date portion. This is why you'll often see time fields beginning with 1970-01-01 because that is the Unix epoch, a reference point for measuring time in seconds.[@RDoc] This ultimately has no effect on functionality but is just a nuisance when it comes to displaying as it requires reformatting to exclude the unwanted portion.
+
 ```{r cast}
 # Cast date, clock.in and clock.out using Lubridate
 data <- data %>% 
@@ -117,9 +126,11 @@ data %>% head
 ```
 
 # Tidy data
+
 With those basic steps complete, we now begin moving towards getting the data into a "tidy" format. Tidy data is a standard way of structuring data that makes it easier to analyse, visualise, and model. The key principle of tidy data is that each variable forms a *column*, each observation forms a *row*, and each type of observational unit forms a *table*.[@Wickham2014-ju]
 
 For our use case, tidying the data will mean dealing with the event column by extracting the different possible events into their own columns. We start by splitting the fields in the event column for cases where there were multiple events in one day.
+
 ```{r separate}
 # Separate options from event into separate columns
 data.tidy <- data %>% separate_rows(event, sep = ",_")
@@ -128,6 +139,7 @@ data.tidy %>% filter(id == 24) %>% head
 ```
 
 Next we create binary indicator columns for each type of event. This moves us closer to our data being tidy with one column for each event where it takes on the value of true or false depending on if that event occured on that day or not.
+
 ```{r indicator columns}
 # Create indicator columns for event options
 data.tidy <- data.tidy %>% 
@@ -147,6 +159,7 @@ data.tidy %>% select(starts_with("event_")) %>% head
 ```
 
 We replace any NAs in the indicator columns with 0 because those values mean the same thing (that event did not occur on that day) and the data should clearly reflect that.
+
 ```{r replace nas}
 # Replace NAs with 0s in indicator columns
 data.tidy <- data.tidy %>% 
@@ -157,6 +170,7 @@ data.tidy %>% select(starts_with("event_")) %>% head
 ```
 
 We then collapse the data back into the original number of rows to keep with the requirements of tidy data. However, we do this by grouping by the ID and using the max aggregate function on the event columns which means we lose the other columns. We remedy this by then performing a full join on the original data.
+
 ```{r collapse}
 # Collapse into original number of rows
 data.collapsed <- data.tidy %>% 
@@ -187,7 +201,9 @@ data.combined %>% head
 ```
 
 # Compile summaries of data
+
 With the data now being in a tidy format, we are ready to proceed to plotting and analysing. For the first analysis we will look at clock in and out times per event. In order to do this we need to pivot the data longer such that there is one clock in/out event per row which makes this analysis easier.
+
 ```{r pivot longer}
 # Pivot longer
 data.long <- data.combined %>%
@@ -211,10 +227,11 @@ time.summaries <- data.long %>% group_by(event, event.type) %>%
 
 datatable(time.summaries)
 ```
+
 From this we can see that the times largely correspond with the event as expected. We will move on to look at the overall clock in/out time stats.
 
-To do this, we could have used the built-in base R summary function, however we found that when working with time fields, it formats the fields in a less than ideal way as alluded to before. To remedy this, we built a custom summary function that calculates the statistics and then tabulates them formatting them before return the table. 
-# Overall times stats
+To do this, we could have used the built-in base R summary function, however we found that when working with time fields, it formats the fields in a less than ideal way as alluded to before. To remedy this, we built a custom summary function that calculates the statistics and then tabulates them formatting them before return the table. \# Overall times stats
+
 ```{r time summary function}
 time.summary <- function(time.field) {
   # Ensure the input is in POSIXct format
@@ -253,18 +270,21 @@ time.summary <- function(time.field) {
 ```
 
 ## Clock in summary
+
 ```{r clock in summary}
 clock.in.summary <- time.summary(data$clock.in)
 datatable(clock.in.summary)
 ```
 
 ## Clock out summary
+
 ```{r clock out summary}
 clock.out.summary <- time.summary(data$clock.out)
 datatable(clock.out.summary)
 ```
 
 We extract some useful insights from the clock in/out summaries. We can then, using the mean clock in/out times, determine how much time I spend in the office on average.
+
 ```{r mean office time}
 # Mean time spent at office
 mean.clock.in <- parse_date_time(clock.in.summary$time[5], orders = "%H:%M")
@@ -275,7 +295,9 @@ mean.office.time
 ```
 
 # Plot some graphs
+
 Finally we can visualise the data. We start with a line graph that shows the clock in/out times over the year. This visualisation is useful for seeing the day to day trends but is not as effective because of the breaks that occur on days where I didn't go into the office.
+
 ```{r line graph, fig.width=13, fig.height=6, out.width="100%", out.height="auto"}
 # Line graph of clock in and out times
 
@@ -299,6 +321,7 @@ ggplot(data.combined, aes(x = date)) +
 ```
 
 A scatter plot works better in this scenario and allows you to still see the general trend but does not seem disjointed for the days without data.
+
 ```{r scatter plot, fig.width=13, fig.height=6, out.width="100%", out.height="auto"}
 # Scatter plot of clock in and out times
 ggplot(data.combined,
@@ -321,6 +344,7 @@ ggplot(data.combined,
 However, we can fit a lot more data onto this plot. In the next plot, we plot the same scatter plot as before however, we differentiate between clock in and clock out points using shape instead of colour. This frees us up to use colour for the different types of event. We also then add the mean clock in/out times as a horizontal line.
 
 We use `geom_jitter` to disperse points so it is visible when there are multiple events on one day. We also use transparency to help show when this is the case.
+
 ```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 plot.colours <- c("Post_Work_Commitment" = "green",
@@ -382,7 +406,7 @@ clock.in.out.detail.static
 ```
 
 Finally, an interactive version of the above plot using Plotly.
+
 ```{r}
 ggplotly(clock.in.out.detail, tooltip = c("x", "y", "colour", "shape"))
 ```
-
