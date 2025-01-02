@@ -91,7 +91,7 @@ We also add an ID column to make identifying rows easier.
 ```{r id column}
 # Add id column
 data <- data %>% 
-  mutate(id = rownames(data))
+  mutate(id = as.integer(rownames(data)))
 
 data %>% head
 ```
@@ -311,7 +311,7 @@ We use `geom_jitter` to jitter overlapping points so it is visible when there ar
 ```{r detailed scatter plot, fig.width=12, fig.height=6, out.width="100%", out.height="auto"}
 # Plot more detailed plot
 clock.in.out.detail <- ggplot(data.long, aes(x = date, y = time, colour = event, fill = event, shape = event.type)) +
-  geom_jitter(size = 3, width = 1, height = 1, alpha = 0.7, na.rm = T) +
+  geom_jitter(size = 3, width = 0.25, height = 0.25, alpha = 0.7, na.rm = T) +
   scale_color_manual(values = c("Post_Work_Commitment" = "green",
                    "Pre_Work_Commitment" = "grey", "16_00_lecture" = "blue", "14_00_lecture" = "red", "11_00_lecture" = "black",
                    "Study_leave" = "yellow", "Conference" = "purple","Standard" = "orange"),
