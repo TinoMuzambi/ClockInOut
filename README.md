@@ -1,12 +1,31 @@
-# Clock In Out Analysis
+# Clock In & Out analysis
 
-The focus of this project is analysing the times I clocked in and out at the office. I figured this would be interesting to analyse especially considering that as part of my MSc I would have lectures that would sometimes eat into my usual working hours. That coupled with other commitments that come up in life sounded like it would make for an interesting analysis and that's how this project was born.
+An end-to-end personal analytics case study built from 250 days of office
+clock-in and clock-out records. The Quarto report covers collection, cleaning,
+tidying multi-label events, descriptive summaries, and interactive Plotly
+visualisation in R.
 
-# GitHub Repo
+**[Read the published analysis](https://tinomuzambi.github.io/ClockInOut/)**
 
-The code for this project can be found [here](https://github.com/TinoMuzambi/ClockInOut).
+## What this demonstrates
 
-# GitHub Pages Site
+- reshaping multi-label event data into tidy indicator columns
+- handling dates, times, missing values, and non-office days with `lubridate`
+- comparing arrival, departure, and office-duration patterns by event type
+- communicating results with static `ggplot2`, interactive Plotly, and tables
 
-The GitHub Pages site for this project can be found [here](https://tinomuzambi.github.io/ClockInOut/).
+## Reproduce it
 
+Install R, Quarto, `tidyverse`, `lubridate`, `plotly`, `DT`, and `scales`. Place
+a private export at `data/data.csv` with the columns `Date`, `Clock In Time`,
+`Clock Out Time`, and `Notes`, then run:
+
+```bash
+quarto render "Clock In Out Analysis.qmd"
+```
+
+Raw work records are intentionally ignored and are not distributed. The
+committed `index.html` is a self-contained snapshot with only the report output
+chosen for publication.
+
+Code and original prose are available under the MIT license.
