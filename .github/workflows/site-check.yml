@@ -1,0 +1,23 @@
+name: Site check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check published report and privacy boundary
+        run: |
+          test -s index.html
+          grep -q "Clock In &amp; Out Analysis" index.html
+          test -s "Clock In Out Analysis.qmd"
+          test -s README.md
+          test -s LICENSE
+          test ! -e data/data.csv
